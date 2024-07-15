@@ -3,6 +3,8 @@
 
 #include "../utilities/movie.h"
 
+namespace Utilities {
+
 class MovieFactory {
 public:
   static Movie createMovie(const std::string &imdb_id, const std::string &title,
@@ -12,5 +14,7 @@ public:
     return Movie{imdb_id, title, plot_synopsis, tags, split, synopsis_source};
   }
 };
+
+} // namespace Utilities
 
 #endif // MOVIE_FACTORY_H

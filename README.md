@@ -9,6 +9,9 @@
 - [Uso](#uso)
 - [Patrones de Diseño](#patrones-de-diseño)
 - [Algoritmos y Estructuras de Datos](#algoritmos-y-estructuras-de-datos)
+- [Programación Genérica](#programación-genérica)
+- [Programación Concurrente](#programación-concurrente)
+- [Namespaces](#namespaces)
 - [Manejo de Errores](#manejo-de-errores)
 - [Bibliografía](#bibliografía)
 - [Contribuyentes](#contribuyentes)
@@ -77,6 +80,20 @@ El proyecto hace uso de algoritmos y estructuras de datos eficientes, incluyendo
 - **Hash Maps**: Para acceso rápido a los datos de las películas.
 - **Sets**: Para gestionar colecciones únicas de películas que te gustan y de "Ver más tarde".
 - **Ordenamiento y filtrado personalizados**: Para mostrar las 10 mejores películas recomendadas.
+
+## Programación Genérica
+La programación genérica se utiliza en el proyecto para crear funciones y clases que puedan trabajar con cualquier tipo de datos. Por ejemplo, se utiliza una función genérica de búsqueda que puede operar tanto sobre títulos como sobre etiquetas.
+
+## Programación Concurrente
+La programación concurrente se implementa para mejorar el rendimiento en las búsquedas. Utilizamos `std::thread` y `std::future` para realizar operaciones en paralelo, permitiendo que las búsquedas sean más rápidas y eficientes.
+
+## Namespaces
+El proyecto utiliza namespaces para organizar el código y evitar conflictos de nombres. Los principales namespaces utilizados son:
+
+- `Utilities`: Contiene las estructuras y funciones utilitarias.
+- `MovieDB`: Contiene las clases relacionadas con la base de datos de películas.
+- `UI`: Contiene las clases relacionadas con la interfaz de usuario.
+- `Search`: Contiene las estrategias de búsqueda.
 
 ## Manejo de Errores
 La aplicación incluye un manejo robusto de errores para asegurar una experiencia de usuario fluida:

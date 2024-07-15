@@ -5,7 +5,9 @@
 #include "movie.h"
 #include <vector>
 
-std::vector<Movie> readCSV(std::string filename) {
+namespace Utilities {
+
+std::vector<Movie> readCSV(const std::string &filename) {
   std::vector<Movie> movies;
 
   try {
@@ -31,4 +33,6 @@ std::vector<Movie> readCSV(std::string filename) {
   return movies;
 }
 
-#endif // !READCSV_H
+} // namespace Utilities
+
+#endif // READCSV_H

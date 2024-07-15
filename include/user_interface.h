@@ -15,6 +15,8 @@
 #include <unistd.h>
 #endif
 
+namespace UI {
+
 class UserInterface : public Observable {
 public:
   UserInterface() {
@@ -55,7 +57,7 @@ public:
     }
 
     auto similarMovies =
-        MovieDatabase::getInstance().getSimilarMovies(likedTags);
+        MovieDB::MovieDatabase::getInstance().getSimilarMovies(likedTags);
     clearConsole();
     std::cout
         << "\033[1;36mPelículas recomendadas basadas en tus gustos:\033[0m\n";
@@ -67,16 +69,16 @@ public:
   }
 
   void searchAndDisplayMovies(const std::string &keyword) {
-    auto results = MovieDatabase::getInstance().searchByTitle(keyword);
+    auto results = MovieDB::MovieDatabase::getInstance().searchByTitle(keyword);
     displayMovies(results);
   }
 
   void searchAndDisplayMoviesByTag(const std::string &tag) {
-    auto results = MovieDatabase::getInstance().searchByTag(tag);
+    auto results = MovieDB::MovieDatabase::getInstance().searchByTag(tag);
     displayMovies(results);
   }
 
-  void selectMovie(const Movie &movie) {
+  void selectMovie(const Utilities::Movie &movie) {
     clearConsole();
     std::cout << "\033[1;36mSinopsis de la película \033[1;33m" << movie.title
               << "\033[0m:\n"
@@ -94,8 +96,8 @@ public:
     clearConsole();
   }
 
-  void
-  displayMovies(const std::vector<Movie> &movies) { // Mover a sección pública
+  void displayMovies(
+      const std::vector<Utilities::Movie> &movies) { // Mover a sección pública
     int page = 0;
     int perPage = 5;
     while (true) {
@@ -131,8 +133,8 @@ public:
   }
 
 private:
-  std::set<Movie> likedMovies;
-  std::set<Movie> laterList;
+  std::set<Utilities::Movie> likedMovies;
+  std::set<Utilities::Movie> laterList;
 
   void saveLaterList() const {
     std::ofstream file("later_list.txt");
@@ -145,7 +147,8 @@ private:
     std::ifstream file("later_list.txt");
     std::string imdb_id;
     while (std::getline(file, imdb_id)) {
-      laterList.insert(MovieDatabase::getInstance().getMovieById(imdb_id));
+      laterList.insert(
+          MovieDB::MovieDatabase::getInstance().getMovieById(imdb_id));
     }
   }
 
@@ -160,7 +163,8 @@ private:
     std::ifstream file("liked_movies.txt");
     std::string imdb_id;
     while (std::getline(file, imdb_id)) {
-      likedMovies.insert(MovieDatabase::getInstance().getMovieById(imdb_id));
+      likedMovies.insert(
+          MovieDB::MovieDatabase::getInstance().getMovieById(imdb_id));
     }
   }
 
@@ -189,5 +193,7 @@ private:
     std::cin.get();
   }
 };
+
+} // namespace UI
 
 #endif // USER_INTERFACE_H

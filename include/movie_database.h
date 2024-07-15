@@ -3,10 +3,16 @@
 
 #include "../utilities/movie.h"
 #include <algorithm>
+#include <future>
+#include <regex>
+#include <sstream>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+namespace MovieDB {
 
 class MovieDatabase {
 public:
@@ -15,41 +21,65 @@ public:
     return instance;
   }
 
-  void loadMovies(const std::vector<Movie> &movies) {
+  void loadMovies(const std::vector<Utilities::Movie> &movies) {
     for (const auto &movie : movies) {
       moviesById[movie.imdb_id] = movie;
-      moviesByTitle[movie.title].push_back(movie);
+      moviesByTitle[toLowerCase(movie.title)].push_back(movie);
       auto tags = splitTags(movie.tags);
       for (const auto &tag : tags) {
-        moviesByTag[tag].push_back(movie);
+        moviesByTag[toLowerCase(tag)].push_back(movie);
       }
     }
   }
 
-  std::vector<Movie> searchByTitle(const std::string &title) const {
-    if (moviesByTitle.find(title) != moviesByTitle.end()) {
-      return moviesByTitle.at(title);
+  template <typename T>
+  std::vector<Utilities::Movie> search(const T &data,
+                                       const std::string &query) const {
+    std::string lowerQuery = toLowerCase(query);
+    std::vector<Utilities::Movie> results;
+    std::regex wordRegex("\\b" + lowerQuery +
+                         "\\b"); // Regex para coincidencia exacta de palabra
+
+    std::vector<std::future<std::vector<Utilities::Movie>>> futures;
+    for (const auto &pair : data) {
+      futures.push_back(std::async(std::launch::async, [&pair, &wordRegex]() {
+        std::vector<Utilities::Movie> localResults;
+        if (std::regex_search(pair.first, wordRegex)) {
+          localResults.insert(localResults.end(), pair.second.begin(),
+                              pair.second.end());
+        }
+        return localResults;
+      }));
     }
-    return {};
+
+    for (auto &future : futures) {
+      auto localResults = future.get();
+      results.insert(results.end(), localResults.begin(), localResults.end());
+    }
+
+    return results;
   }
 
-  std::vector<Movie> searchByTag(const std::string &tag) const {
-    if (moviesByTag.find(tag) != moviesByTag.end()) {
-      return moviesByTag.at(tag);
-    }
-    return {};
+  std::vector<Utilities::Movie> searchByTitle(const std::string &title) const {
+    return search(moviesByTitle, title);
   }
 
-  std::vector<Movie>
+  std::vector<Utilities::Movie> searchByTag(const std::string &tag) const {
+    return search(moviesByTag, tag);
+  }
+
+  std::vector<Utilities::Movie>
   getSimilarMovies(const std::unordered_set<std::string> &likedTags) const {
-    std::vector<Movie> similarMovies;
+    std::vector<Utilities::Movie> similarMovies;
     for (const auto &tag : likedTags) {
       auto moviesWithTag = searchByTag(tag);
       similarMovies.insert(similarMovies.end(), moviesWithTag.begin(),
                            moviesWithTag.end());
     }
     std::sort(similarMovies.begin(), similarMovies.end(),
-              [](const Movie &a, const Movie &b) { return a.title < b.title; });
+              [](const Utilities::Movie &a, const Utilities::Movie &b) {
+                return a.title < b.title;
+              });
     auto last = std::unique(similarMovies.begin(), similarMovies.end());
     similarMovies.erase(last, similarMovies.end());
 
@@ -61,16 +91,18 @@ public:
     return similarMovies;
   }
 
-  Movie getMovieById(const std::string &id) const { return moviesById.at(id); }
+  Utilities::Movie getMovieById(const std::string &id) const {
+    return moviesById.at(id);
+  }
 
 private:
   MovieDatabase() = default;
   MovieDatabase(const MovieDatabase &) = delete;
   MovieDatabase &operator=(const MovieDatabase &) = delete;
 
-  std::unordered_map<std::string, Movie> moviesById;
-  std::unordered_map<std::string, std::vector<Movie>> moviesByTitle;
-  std::unordered_map<std::string, std::vector<Movie>> moviesByTag;
+  std::unordered_map<std::string, Utilities::Movie> moviesById;
+  std::unordered_map<std::string, std::vector<Utilities::Movie>> moviesByTitle;
+  std::unordered_map<std::string, std::vector<Utilities::Movie>> moviesByTag;
 
   std::vector<std::string> splitTags(const std::string &tags) const {
     std::vector<std::string> result;
@@ -82,6 +114,15 @@ private:
     result.push_back(tags.substr(start));
     return result;
   }
+
+  std::string toLowerCase(const std::string &str) const {
+    std::string lowerStr = str;
+    std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(),
+                   ::tolower);
+    return lowerStr;
+  }
 };
+
+} // namespace MovieDB
 
 #endif // MOVIE_DATABASE_H
